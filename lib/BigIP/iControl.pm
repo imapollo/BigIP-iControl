@@ -9,7 +9,7 @@ use SOAP::Lite;
 use MIME::Base64;
 use Math::BigInt;
 
-our $VERSION    = '0.097';
+our $VERSION    = '0.100';
 
 =head1 NAME
 
@@ -170,7 +170,8 @@ our $modules    = {
 							delete_configuration	=> {filename => 1},
 							save_configuration	=> {filename => 1, save_flag => 1},
 							download_file		=> {file_name => 1, chunk_size => 1, file_offset => 1},
-							download_configuration	=> {config_name => 1, chunk_size => 1, file_offset => 1}
+							download_configuration	=> {config_name => 1, chunk_size => 1, file_offset => 1},
+                            load_configuration => {filename => 1, load_flag => 1}
 							},
 				SystemInfo	=>	{
 							get_system_information	=> 0,
@@ -975,6 +976,24 @@ sub download_configuration {
 
 	close $fh;
 	return 1
+}
+
+=head3 load_configuration()
+
+    my $success = $ic->load_configuration( $filename, $load_mode );
+
+The same as b load.
+
+For Load Mode:
+0 LOAD_HIGH_LEVEL_CONFIG: Load the high-level configuration, such as objects in /config/bigip.conf.
+1 LOAD_BASE_LEVEL_CONFIG: Load the base configuration (VLANs, self IPs...).
+
+=cut
+
+sub load_configuration {
+    my ( $self, $filename, $load_mode ) = @_;
+    $self->_request( module => 'System', interface => 'ConfigSync', method => 'load_configuration', data => { filename => $filename, load_flag => $load_mode } );
+    return 0;
 }
 
 =head3 get_configuration_list ()
