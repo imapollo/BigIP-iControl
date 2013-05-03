@@ -171,7 +171,9 @@ our $modules    = {
 							save_configuration	=> {filename => 1, save_flag => 1},
 							download_file		=> {file_name => 1, chunk_size => 1, file_offset => 1},
 							download_configuration	=> {config_name => 1, chunk_size => 1, file_offset => 1},
-                            load_configuration => {filename => 1, load_flag => 1}
+                            load_configuration => {filename => 1, load_flag => 1},
+                            upload_configuration => {config_name => 1, file_context => 1},
+                            upload_file => {file_name => 1, file_context => 1}
 							},
 				SystemInfo	=>	{
 							get_system_information	=> 0,
@@ -994,6 +996,56 @@ sub load_configuration {
     my ( $self, $filename, $load_mode ) = @_;
     $self->_request( module => 'System', interface => 'ConfigSync', method => 'load_configuration', data => { filename => $filename, load_flag => $load_mode } );
     return 0;
+}
+
+=head3 upload_file ($remote_file, $local_file)
+
+This method downloads a saved UCS configuration from the target device.
+
+=cut
+
+sub upload_file {
+    my ( $self, $remote_file, $local_file ) = @_;
+
+    my $continue = 1;
+    my $chain_type = 1;
+    my $preferred_chunk_size = 65536;
+    my $chunk_size = 65536;
+    my $total_bytes = 0;
+
+    $remote_file or croak 'No file path specified';
+
+    open(LOCAL_FILE, "<$local_file") or die("Can't open $local_file for input: $!");
+    binmode(LOCAL_FILE);
+
+    while ( 1 == $continue ) {
+        my $file_data = "";
+        my $bytes_read = read(LOCAL_FILE, $file_data, $chunk_size);
+        if ( $preferred_chunk_size != $bytes_read ) {
+            if ( $total_bytes == 0 ) {
+                $chain_type = 5 # FILE_FIRST_AND_LAST;
+            } else {
+                $chain_type = 4 # FILE_LAST
+            }
+            $continue = 0;
+        }
+        $total_bytes += $bytes_read;
+        my $file_transfer_context = {
+            file_data => SOAP::Data->type(base64 => $file_data),
+            chain_type => $chain_type
+        };
+        my $response = $self->_request(
+            module => 'System',
+            interface => 'ConfigSync',
+            method => 'upload_file',
+            data => {
+                file_name => $remote_file,
+                file_context => $file_transfer_context
+            }
+        );
+        $chain_type = 2; # FILE_MIDDLE
+    }
+    close (LOCAL_FILE);
 }
 
 =head3 get_configuration_list ()
