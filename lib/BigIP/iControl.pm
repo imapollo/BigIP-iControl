@@ -94,7 +94,8 @@ our $modules    = {
 							get_all_statistics	=> 0,
 							get_rule		=> 'virtual_servers',
 							get_snat_pool		=> 'virtual_servers',
-							get_snat_type		=> 'virtual_servers'
+							get_snat_type		=> 'virtual_servers',
+                            delete_virtual_server => 'virtual_servers'
 							},
 				Pool		=>	{
 							get_list		=> 0,
@@ -1597,6 +1598,22 @@ sub get_ltm_snat_pool {
 sub get_ltm_snat_type {
 	my($self, $vs) = @_;
 	return @{$self->_request(module => 'LocalLB', interface => 'VirtualServer', method => 'get_snat_type', data => {virtual_servers => [$vs]})}[0]
+}
+
+=head3 delete_virtual_servers ( @virtual_servers )
+
+=cut
+
+sub delete_virtual_servers {
+    my ( $self, @virtual_servers ) = @_;
+    $self->_request(
+        module => 'LocalLB',
+        interface => 'VirtualServer',
+        method => 'delete_virtual_server',
+        data => {
+            virtual_servers => @virtual_servers
+        }
+    );
 }
 
 =head3 get_default_pool_name ($virtual_server)
