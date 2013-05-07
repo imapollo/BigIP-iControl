@@ -103,12 +103,17 @@ our $modules    = {
 							get_object_status	=> 'pool_names',
 							get_statistics		=> 'pool_names',
 							get_all_statistics	=> 'pool_names',
-							get_member_object_status=> {pool_names => 1, members => 1}
+							get_member_object_status=> {pool_names => 1, members => 1},
+                            delete_pool => 'pool_names'
 							},
 				PoolMember	=>	{
 							get_statistics		=> {pool_names => 1, members => 1},
 							get_all_statistics	=> 'pool_names',
 							},
+                Rule        => {
+                            get_list            => 0,
+                            delete_rule         => 'rule_names'
+                            },
 				NodeAddress	=>	{
 							get_list		=> 0,
 							get_screen_name		=> 'node_addresses',
@@ -1884,6 +1889,52 @@ sub get_ltm_pool_status_as_string {
 
 sub _get_ltm_pool_member_oject_status {
 	my ($self, $pool)
+}
+
+=head3 delete_pools ( @pools )
+
+Delete the specified pools.
+
+=cut
+
+sub delete_pools {
+    my ( $self, @pools ) = @_;
+    $self->_request(
+        module => 'LocalLB',
+        interface => 'Pool',
+        method => 'delete_pool',
+        data => {
+            pool_names => @pools
+        }
+    );
+}
+
+=head3 get_rule_list ()
+
+Return an array of rule list.
+
+=cut
+
+sub get_rule_list {
+    return @{$_[0]->_request(module => 'LocalLB', interface => 'Rule', method => 'get_list')};
+}
+
+=head3 delete_rules ( @rules )
+
+Delete the specified rules.
+
+=cut
+
+sub delete_rules {
+    my ( $self, @rules ) = @_;
+    $self->_request(
+        module => 'LocalLB',
+        interface => 'Rule',
+        method => 'delete_rule',
+        data => {
+            rule_names => @rules
+        }
+    );
 }
 
 =head3 get_connection_list ()
