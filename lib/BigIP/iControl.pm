@@ -144,7 +144,10 @@ our $modules    = {
 							get_proxy_url		=> 'id_list',
 							remove			=> 'id_list',
 							query			=> 'id_list'
-							}
+							},
+                Partition   =>  {
+                            set_active_partition => { active_partition => 1 },
+                            }
 				},
 	Networking	=>	{
 				Interfaces	=>	{
@@ -2342,6 +2345,21 @@ sub get_subscription_list {
 	my @subs;
 	foreach (@{$self->_request(module => 'Management', interface => 'EventSubscription', method => 'get_list')}){push @subs, $_}
 	return @subs
+}
+
+=head3 set_active_partition( $partition_name )
+
+=cut
+sub set_active_partition {
+    my ( $self, $partition_name ) = @_;
+    $self->_request( module    => 'Management',
+                     interface => 'Partition',
+                     method    => 'set_active_partition',
+                     data      => {
+                                    active_partition => $partition_name
+                                  }
+                   );
+    return;
 }
 
 =head3 get_subscription_list
