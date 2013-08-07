@@ -80,7 +80,11 @@ our $modules    = {
 							get_all_statistics	=> 0,
 							get_enabled_state	=> 'virtual_servers',
 							get_list		=> 0
-							}
+							},
+                WideIP      =>  {
+                            get_list            => 0,
+                            get_wideip_pool     => 'wide_ips'
+                            }
 				},
 	LTConfig	=>	{},
 	LocalLB		=>	{
@@ -103,12 +107,12 @@ our $modules    = {
 							get_object_status	=> 'pool_names',
 							get_statistics		=> 'pool_names',
 							get_all_statistics	=> 'pool_names',
-							get_member_object_status=> {pool_names => 1, members => 1},
                             delete_pool => 'pool_names'
 							},
 				PoolMember	=>	{
 							get_statistics		=> {pool_names => 1, members => 1},
 							get_all_statistics	=> 'pool_names',
+                            get_object_status   => 'pool_names',
 							},
                 Rule        => {
                             get_list            => 0,
@@ -1424,6 +1428,38 @@ sub get_ltm_vs_list {
 	return @{$_[0]->_request(module => 'LocalLB', interface => 'VirtualServer', method => 'get_list')};
 }
 
+=head3 get_wideip_list ()
+
+	my @wideip_list = $ic->get_wideip_list();
+
+Returns an array of the wide ips.
+
+=cut
+
+sub get_wideip_list {
+	return @{$_[0]->_request(module => 'GlobalLB', interface => 'WideIP', method => 'get_list')};
+}
+
+=head3 get_wideip_pool_list ()
+
+	my @wideip_pool_list = $ic->get_wideip_pool_list();
+
+Returns an array of the wide ips.
+
+=cut
+
+sub get_wideip_pool_list {
+    my ( $self, $wideip ) = @_;
+    my @wideip_pools;
+	my $pools_ref = $self->_request(module => 'GlobalLB', interface => 'WideIP', method => 'get_wideip_pool', data => {wide_ips => [$wideip]} );
+    foreach my $pool_ref ( @{ $pools_ref->[0] } ) {
+        push @wideip_pools, $pool_ref->{ 'order' } . " " .  $pool_ref->{ 'pool_name' };
+    }
+    @wideip_pools = sort @wideip_pools;
+    my @sorted_wideip_pools = map { local $_ = $_; s/[0-9]+ //; $_} @wideip_pools;
+    return @sorted_wideip_pools;
+}
+
 =head3 get_gtm_vs_list ()
 
 	my @gtm_virtuals = $ic->get_gtm_vs_list();
@@ -1763,6 +1799,20 @@ sub get_pool_statistics_stringified {
 	my ($self, $pool)= @_;
 	return __process_statistics($self->get_pool_statistics($pool));
 }
+
+=head3 get_pool_member_status ($pool)
+
+Returns all pool member status for the specified pool as an array of MemberObjectStatus objects.
+
+=cut
+
+sub get_pool_member_status {
+	my ($self, $pool)= @_;
+	
+	return $self->_request(module => 'LocalLB', interface => 'PoolMember', method => 'get_object_status', data => {
+		pool_names	=> [$pool] });
+}
+
 
 =head3 get_pool_member_statistics ($pool)
 
