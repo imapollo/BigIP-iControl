@@ -74,7 +74,8 @@ our $modules    = {
 				Pool		=>	{
 							get_description		=> 'pool_names',
 							get_list		=> 0,
-							get_member		=> 'pool_names'
+							get_member		=> 'pool_names',
+                            get_object_status   => 'pool_names'
 							},
 				VirtualServer	=>	{
 							get_all_statistics	=> 0,
@@ -83,7 +84,8 @@ our $modules    = {
 							},
                 WideIP      =>  {
                             get_list            => 0,
-                            get_wideip_pool     => 'wide_ips'
+                            get_wideip_pool     => 'wide_ips',
+                            get_lb_method       => 'wide_ips'
                             }
 				},
 	LTConfig	=>	{},
@@ -1460,6 +1462,20 @@ sub get_wideip_pool_list {
     return @sorted_wideip_pools;
 }
 
+=head3 get_wideip_pool_list ()
+
+	my @wideip_pool_list = $ic->get_wideip_pool_list();
+
+Returns an array of the wide ips.
+
+=cut
+
+sub get_wideip_lb_method {
+    my ( $self, $wideip ) = @_;
+    my @wideip_pools;
+	return @{$self->_request(module => 'GlobalLB', interface => 'WideIP', method => 'get_lb_method', data => {wide_ips => [$wideip]} )}[0];
+}
+
 =head3 get_gtm_vs_list ()
 
 	my @gtm_virtuals = $ic->get_gtm_vs_list();
@@ -2184,6 +2200,31 @@ sub get_gtm_pool_description {
 	my ($self, $pool)=@_;
 	return @{$self->_request(module => 'GlobalLB', interface => 'Pool', method => 'get_description', data => {pool_names => [$pool]})}[0];
 }
+
+=head3 get_gtm_pool_status ()
+
+Return the GTM pool avaiability status.
+
+=cut
+
+sub get_gtm_pool_status {
+	my ($self, $pool)=@_;
+	my $status_ref = @{$self->_request(module => 'GlobalLB', interface => 'Pool', method => 'get_object_status', data => {pool_names => [$pool]})}[0];
+    return $status_ref->{ 'availability_status' };
+}
+
+=head3 get_gtm_pool_enabled_status ()
+
+Return the GTM pool enable status.
+
+=cut
+
+sub get_gtm_pool_enabled_status {
+	my ($self, $pool)=@_;
+	my $status_ref = @{$self->_request(module => 'GlobalLB', interface => 'Pool', method => 'get_object_status', data => {pool_names => [$pool]})}[0];
+    return $status_ref->{ 'enabled_status' };
+}
+
 
 =head3 get_gtm_vs_all_statistics ()
 
