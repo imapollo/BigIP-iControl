@@ -66,7 +66,10 @@ sub parse_virtual {
             }
         }
     }
-    print "virtual: $virtual_name\n" if defined $virtual_name;
-    print "pool: $default_pool\n" if defined $default_pool;
-    print "irule: $irule\n" if defined $irule;
+    my %virtual_server = (
+        'name'          => $virtual_name,
+        'default_pool'  => $default_pool,
+        'irule'         => $irule,
+    );
+    return \%virtual_server;
 }
