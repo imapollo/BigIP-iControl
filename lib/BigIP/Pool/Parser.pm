@@ -43,7 +43,6 @@ sub parse_pool {
         }
     }
     my %pool = (
-        'name'          => $pool_name,
     );
-    return \%pool;
+    return ( $pool_name, \%pool );
 }

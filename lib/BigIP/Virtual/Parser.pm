@@ -67,9 +67,8 @@ sub parse_virtual {
         }
     }
     my %virtual_server = (
-        'name'          => $virtual_name,
         'default_pool'  => $default_pool,
         'irule'         => $irule,
     );
-    return \%virtual_server;
+    return ( $virtual_name, \%virtual_server );
 }
