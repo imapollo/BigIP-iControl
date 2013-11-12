@@ -1516,8 +1516,8 @@ Returns the destination of the specified virtual server in list of %hash{ 'addre
 =cut
 
 sub get_vss_destinations {
-	my ($self, @vss) = @_;
-    return @{$self->_request(module => 'LocalLB', interface => 'VirtualServer', method => 'get_destination', data => {virtual_servers => @vss })};
+	my ($self, $vss_ref) = @_;
+	return @{$self->_request(module => 'LocalLB', interface => 'VirtualServer', method => 'get_destination', data => {virtual_servers => $vss_ref })};
 }
 
 =head3 get_vs_enabled_state ($virtual_server)
