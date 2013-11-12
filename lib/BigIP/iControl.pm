@@ -1507,6 +1507,19 @@ sub get_vs_destination {
 	return $destination->{address}.':'.$destination->{port}
 }
 
+=head3 get_vss_destinations ( @virtual_servers )
+
+	my $destination	= $ic->get_vss_destinations( @vss );
+
+Returns the destination of the specified virtual server in list of %hash{ 'address'=>'', 'port'=>'' }.
+
+=cut
+
+sub get_vss_destinations {
+	my ($self, @vss) = @_;
+    return @{$self->_request(module => 'LocalLB', interface => 'VirtualServer', method => 'get_destination', data => {virtual_servers => @vss })};
+}
+
 =head3 get_vs_enabled_state ($virtual_server)
 
 	print "LTM Virtual server $vs is in state ",$ic->get_vs_enabled_state($vs),"\n";
