@@ -35,6 +35,7 @@ sub parse_virtual {
     my $virtual_name = qw{};
     my $default_pool = qw{};
     my $irule = qw{};
+    my $destination = qw{};
     my $in_rules_section = 0;
     while ( my $line = <VSCONFIG_FH> ) {
         if ( $in_rules_section ) {
@@ -58,6 +59,10 @@ sub parse_virtual {
                 $default_pool = $line;
                 $default_pool =~ s/^\s*pool\s+(\S+)\s*$/$1/;
             }
+            if ( $line =~ m/^\s*destination\s+/ ) {
+                $destination = $line;
+                $destination =~ s/^\s*destination\s(\S+)\s*$/$1/;
+            }
             if ( $line =~ m/^\s*rules\s*{\s*$/ ) {
                 $in_rules_section = 1;
             } elsif ( $line =~ m/^\s*rules\s+/ ) {
@@ -69,6 +74,7 @@ sub parse_virtual {
     my %virtual_server = (
         'default_pool'  => $default_pool,
         'irule'         => $irule,
+        'destination'   => $destination,
     );
     return ( $virtual_name, \%virtual_server );
 }

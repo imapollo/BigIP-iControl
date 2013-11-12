@@ -36,13 +36,30 @@ sub parse_pool {
     open POOL_CONFIG_FH, "<$pool_config_file" or die $!;
 
     my $pool_name = qw{};
+    my $in_members_section = 0;
+    my @pool_members;
+
     while ( my $line = <POOL_CONFIG_FH> ) {
+        if ( $in_members_section ) {
+            if ( $line =~ /^\s*}\s*$/ ) {
+                $in_members_section = 0;
+                next;
+            }
+            $line =~ s/^\s*(.*) {.*$/$1/;
+            chomp $line;
+            push @pool_members, $line;
+        }
+        if ( $line =~ /^\s*members {/ ) {
+            $in_members_section = 1;
+            next;
+        }
         if ( $line =~ m/^pool\s+/ ) {
             $pool_name = $line;
             $pool_name =~ s/^pool\s+(\S+)\s{\s*$/$1/;
         }
     }
     my %pool = (
+        'members'   => join ",", sort( @pool_members ),
     );
     return ( $pool_name, \%pool );
 }
