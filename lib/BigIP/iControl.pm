@@ -118,7 +118,8 @@ our $modules    = {
 							},
                 Rule        => {
                             get_list            => 0,
-                            delete_rule         => 'rule_names'
+                            delete_rule         => 'rule_names',
+                            query_rule          => 'rule_names'
                             },
 				NodeAddress	=>	{
 							get_list		=> 0,
@@ -2017,6 +2018,17 @@ sub delete_rules {
             rule_names => @rules
         }
     );
+}
+
+=head3 get_rule ( $rule )
+
+Get the definition of a specified rule.
+
+=cut
+
+sub get_rule {
+    my ( $self, $rule ) = @_;
+    return @{ $self->_request( module => 'LocalLB', interface => 'Rule', method => 'query_rule', data => { rule_names => [ $rule ] })}[0]->{ 'rule_definition' };
 }
 
 =head3 get_connection_list ()
