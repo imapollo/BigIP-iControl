@@ -119,7 +119,9 @@ our $modules    = {
                 Rule        => {
                             get_list            => 0,
                             delete_rule         => 'rule_names',
-                            query_rule          => 'rule_names'
+                            query_rule          => 'rule_names',
+                            modify_rule         => 'rules',
+                            create              => 'rules'
                             },
 				NodeAddress	=>	{
 							get_list		=> 0,
@@ -2016,6 +2018,42 @@ sub delete_rules {
         method => 'delete_rule',
         data => {
             rule_names => @rules
+        }
+    );
+}
+
+=head3 modify_rule ( iRuleDefinition )
+
+Modify the specified rules.
+
+=cut
+
+sub modify_rule {
+    my ( $self, $iRuleDefinition ) = @_;
+    $self->_request(
+        module => 'LocalLB',
+        interface => 'Rule',
+        method => 'modify_rule',
+        data => {
+            rules => [ $iRuleDefinition ]
+        }
+    );
+}
+
+=head3 create_rule ( iRuleDefinition )
+
+Create the specified rules.
+
+=cut
+
+sub create_rule {
+    my ( $self, $iRuleDefinition ) = @_;
+    $self->_request(
+        module => 'LocalLB',
+        interface => 'Rule',
+        method => 'create',
+        data => {
+            rules => [ $iRuleDefinition ]
         }
     );
 }
