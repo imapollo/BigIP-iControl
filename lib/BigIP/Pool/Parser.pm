@@ -7,8 +7,8 @@ package BigIP::Pool::Parser;
 use strict;
 use warnings;
 
-use lib '/nas/reg/lib/perl';
 use lib '/nas/home/minjzhang/ops/util/lib';
+use lib '/nas/reg/lib/perl';
 
 use Readonly;
 
@@ -53,9 +53,9 @@ sub parse_pool {
             $in_members_section = 1;
             next;
         }
-        if ( $line =~ m/^pool\s+/ ) {
+        if ( $line =~ m/^(?:ltm)?\s*pool\s+/ ) {
             $pool_name = $line;
-            $pool_name =~ s/^pool\s+(\S+)\s{\s*$/$1/;
+            $pool_name =~ s/^(?:ltm)?\s*pool\s+(\S+)\s{\s*$/$1/;
         }
     }
     my %pool = (

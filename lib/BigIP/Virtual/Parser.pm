@@ -7,8 +7,8 @@ package BigIP::Virtual::Parser;
 use strict;
 use warnings;
 
-use lib '/nas/reg/lib/perl';
 use lib '/nas/home/minjzhang/ops/util/lib';
+use lib '/nas/reg/lib/perl';
 
 use Readonly;
 
@@ -51,9 +51,9 @@ sub parse_virtual {
                 }
             }
         } else {
-            if ( $line =~ m/^virtual\s+/ ) {
+            if ( $line =~ m/^(?:ltm)?\s*virtual\s+/ ) {
                 $virtual_name = $line;
-                $virtual_name =~ s/^virtual\s+(\S+)\s{\s*$/$1/;
+                $virtual_name =~ s/^(?:ltm)?\s*virtual\s+(\S+)\s{\s*$/$1/;
             }
             if ( $line =~ m/^\s*pool\s+/ ) {
                 $default_pool = $line;
@@ -63,9 +63,16 @@ sub parse_virtual {
                 $destination = $line;
                 $destination =~ s/^\s*destination\s(\S+)\s*$/$1/;
             }
+
             if ( $line =~ m/^\s*rules\s*{\s*$/ ) {
+                # Parse irule if 'rules {'
                 $in_rules_section = 1;
+            } elsif ( $line =~ m/^\s*rules\s*\{\s*\S+\s*\}\s*$/ ) {
+                # Parse irule if 'rules { xxx-api }'
+                $irule = $line;
+                $irule =~ s/^\s*rules\s*\{\s*(\S+)\s*\}\s*$/$1/;
             } elsif ( $line =~ m/^\s*rules\s+/ ) {
+                # Parse irule if 'rules xxx-api'
                 $irule = $line;
                 $irule =~ s/^\s*rules\s+(\S+)\s*$/$1/;
             }
