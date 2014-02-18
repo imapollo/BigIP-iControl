@@ -1910,10 +1910,6 @@ sub _toggle_pool_member {
         }
     }
 
-    if ( not defined $member_ref ) {
-        return "Request error: cannot find [$pool_member] in pool [$pool]."
-    }
-
     my $MemberMonitorState = { member => $member_ref, monitor_state => $action };
     my @MemberMonitorStateList;
     push @MemberMonitorStateList, $MemberMonitorState;
