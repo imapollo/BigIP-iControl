@@ -8,6 +8,7 @@ use Exporter;
 use SOAP::Lite;
 use MIME::Base64;
 use Math::BigInt;
+use Data::Dumper;
 
 our $VERSION    = '0.100';
 
@@ -115,6 +116,8 @@ our $modules    = {
 							get_statistics		=> {pool_names => 1, members => 1},
 							get_all_statistics	=> 'pool_names',
                             get_object_status   => 'pool_names',
+                            set_monitor_state   => {pool_names => 1, monitor_states => 1},
+                            set_session_enabled_state => {pool_names => 1, session_states =>1},
 							},
                 Rule        => {
                             get_list            => 0,
@@ -1859,6 +1862,90 @@ sub get_pool_member_statistics {
 	return $self->_request(module => 'LocalLB', interface => 'PoolMember', method => 'get_statistics', data => {
 		pool_names	=> [$pool],
 		members		=> $self->__get_pool_members($pool,'LocalLB') });
+}
+
+=head3 enable_pool_member ( $pool, $pool_member )
+
+Enable the pool member in a pool.
+
+=cut
+sub enable_pool_member {
+    my ($self, $pool, $pool_member) = @_;
+    $self->_toggle_pool_member( $pool, $pool_member, "STATE_ENABLED" );
+}
+
+=head3 disable_pool_member ( $pool, $pool_member )
+
+Disable the pool member in a pool.
+
+=cut
+sub disable_pool_member {
+    my ($self, $pool, $pool_member) = @_;
+    $self->_toggle_pool_member( $pool, $pool_member, "STATE_DISABLED" );
+}
+
+
+=head3 _toggle_pool_member ( $pool, $pool_member, $action )
+
+Toggle the pool member in a pool.
+
+=cut
+sub _toggle_pool_member {
+    my ($self, $pool, $pool_member, $action) = @_;
+
+    my @members = $self->get_pool_members( $pool );
+
+    my $member_ip = qw();
+    my $member_port = qw();
+    my $member_ref = qw();
+
+    foreach my $member ( @members ) {
+        $member_ip = $member;
+        $member_port = $member;
+        $member_ip =~ s/(.*):.*/$1/;
+        $member_port =~ s/.*:(.*)/$1/;
+        if ( $member_ip eq $pool_member ) {
+            $member_ref = { address => $member_ip, port => $member_port };
+            last;
+        }
+    }
+
+    if ( not defined $member_ref ) {
+        return "Request error: cannot find [$pool_member] in pool [$pool]."
+    }
+
+    my $MemberMonitorState = { member => $member_ref, monitor_state => $action };
+    my @MemberMonitorStateList;
+    push @MemberMonitorStateList, $MemberMonitorState;
+    my @MemberMonitorStateLists;
+    push @MemberMonitorStateLists, [@MemberMonitorStateList];
+
+    my $MemberSessionState = { member => $member_ref, session_state => $action };
+    my @MemberSessionStateList;
+    push @MemberSessionStateList, $MemberSessionState;
+    my @MemberSessionStateLists;
+    push @MemberSessionStateLists, [@MemberSessionStateList];
+
+    my $response = $self->_request(
+        module => 'LocalLB',
+        interface => 'PoolMember',
+        method => 'set_monitor_state',
+        data => {
+            pool_names => [ $pool ],
+            monitor_states => [ @MemberMonitorStateLists ]
+        }
+    );
+
+    $response = $self->_request(
+        module => 'LocalLB',
+        interface => 'PoolMember',
+        method => 'set_session_enabled_state',
+        data => {
+            pool_names => [ $pool ],
+            session_states => [ @MemberSessionStateLists ]
+        }
+    );
+
 }
 
 =head3 get_pool_member_statistics_stringified ($pool)
