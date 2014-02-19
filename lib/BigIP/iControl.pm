@@ -110,7 +110,8 @@ our $modules    = {
 							get_object_status	=> 'pool_names',
 							get_statistics		=> 'pool_names',
 							get_all_statistics	=> 'pool_names',
-                            delete_pool => 'pool_names'
+                            delete_pool => 'pool_names',
+                            get_monitor_instance => 'pool_names',
 							},
 				PoolMember	=>	{
 							get_statistics		=> {pool_names => 1, members => 1},
@@ -2075,6 +2076,25 @@ sub delete_pools {
             pool_names => @pools
         }
     );
+}
+
+=head3 get_monitor_states ( $pool_name )
+
+Get the states of monitors in a pool.
+
+=cut
+
+sub get_monitor_states {
+    my ( $self, $pool_name ) = @_;
+    my @states = $self->_request(
+        module => 'LocalLB',
+        interface => 'Pool',
+        method => 'get_monitor_instance',
+        data => {
+            pool_names => [ $pool_name ]
+        }
+    );
+    return $states[0];
 }
 
 =head3 get_rule_list ()
