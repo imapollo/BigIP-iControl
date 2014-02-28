@@ -127,6 +127,9 @@ our $modules    = {
                             modify_rule         => 'rules',
                             create              => 'rules'
                             },
+                Monitor     =>  {
+                            get_template_string_property => { template_names => 1, property_types => 1 },
+                            },
 				NodeAddress	=>	{
 							get_list		=> 0,
 							get_screen_name		=> 'node_addresses',
@@ -2095,6 +2098,26 @@ sub get_monitor_states {
         }
     );
     return $states[0];
+}
+
+=head3 get_monitor_template_send ( $monitor_template_name )
+
+Get the states of monitors in a pool.
+
+=cut
+
+sub get_monitor_template_send {
+    my ( $self, $monitor_template_name ) = @_;
+    my @send_values = $self->_request(
+        module => 'LocalLB',
+        interface => 'Monitor',
+        method => 'get_template_string_property',
+        data => {
+            template_names => [ $monitor_template_name ],
+            property_types => [ 'STYPE_SEND' ]
+        }
+    );
+    return $send_values[0][0]->{ 'value' };
 }
 
 =head3 get_rule_list ()
